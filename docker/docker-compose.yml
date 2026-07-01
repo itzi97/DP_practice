@@ -1,5 +1,6 @@
 # Assignment docker-compose — built incrementally
 # Step 2_5: added Spark Standalone cluster (master + 2 workers)
+# Step 2_7: exposed port 4040 for Spark Application WebUI
 
 services:
   mongodb:
@@ -45,6 +46,7 @@ services:
     ports:
       - "8080:8080" # Spark Standalone WebUI
       - "7077:7077" # Master port
+      - "4040:4040" # Spark Application WebUI
     volumes:
       - ./data:/data
       - ./jars:/opt/spark/jars/extra
