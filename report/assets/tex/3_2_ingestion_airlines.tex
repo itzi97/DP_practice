@@ -1,0 +1,12 @@
+\subsection{Airlines}
+
+% Describe:
+% 1. Loading airlines.dat as DataFrame (spark.read.csv)
+% 2. Normalizing 'active' column: Y->1, N/n->0 (Integer)
+% 3. Filtering out inactive airlines
+% 4. Writing to HDFS /practice/airlines/ as Parquet partitioned by country
+% 5. Reading back and showing 5 rows
+
+\inputminted{scala}{../../code/p2_airlines.scala}
+
+% Screenshots: DataFrame load, active column transform, HDFS write, show 5 rows
