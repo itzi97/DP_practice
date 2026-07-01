@@ -1,10 +1,15 @@
+# Assignment docker-compose — built incrementally
+# Step 2_3: added Postgres
+
 services:
+
   mongodb:
     image: mongo:6.0
     container_name: mongodb
     ports:
       - "27017:27017"
     restart: unless-stopped
+
 
   hdfs:
     build: ./hdfs
@@ -20,8 +25,20 @@ services:
       - hdfs_logs:/var/log/hadoop
     restart: unless-stopped
 
-# TODO:
-#   postgres
+
+  postgres:
+    image: postgres:9.6
+    container_name: postgres
+    environment:
+      POSTGRES_USER: spark
+      POSTGRES_PASSWORD: spark
+      POSTGRES_DB: sparkdb
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+
+# services to be added incrementally:
 #   spark-master
 #   spark-worker-1
 #   spark-worker-2
