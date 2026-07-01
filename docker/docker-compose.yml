@@ -1,4 +1,8 @@
+# Assignment docker-compose — built incrementally
+# Step 2_2: added HDFS
+
 services:
+
   mongodb:
     image: mongo:6.0
     container_name: mongodb
@@ -6,9 +10,28 @@ services:
       - "27017:27017"
     restart: unless-stopped
 
-# TODO:
-#   hdfs
+
+  hdfs:
+    build: ./hdfs
+    container_name: hdfs
+    hostname: hdfs
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+      - "9864:9864"
+      - "9868:9868"
+    volumes:
+      - hdfs_data:/data
+      - hdfs_logs:/var/log/hadoop
+    restart: unless-stopped
+
+
+# services to be added incrementally:
 #   postgres
 #   spark-master
 #   spark-worker-1
 #   spark-worker-2
+
+volumes:
+  hdfs_data:
+  hdfs_logs:
