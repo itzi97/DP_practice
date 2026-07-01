@@ -1,11 +1,44 @@
 \subsection{Deploy HDFS}
 
-% Describe HDFS container deployment
-% Include check that service started correctly
+\par
+The HDFS container configuration was reused from the class activities, which provides a
+\texttt{Dockerfile} based on \texttt{apache/hadoop:3.3.6} and a startup script
+\texttt{start-hdfs.sh} that configures and launches the NameNode, DataNode, and
+SecondaryNameNode in pseudo-distributed mode. Both files were copied from the class
+repository into the \texttt{docker/hdfs/} directory:
 
-% Screenshot placeholder:
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.9\textwidth]{2_2_hdfs_started.png}
-%     \caption{HDFS service started and verified}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_2_hdfs_dockerfile.png}
+    \caption{HDFS build context: \texttt{Dockerfile} and \texttt{start-hdfs.sh}}
+\end{figure}
+
+\par
+The HDFS service was then added to the \texttt{docker-compose.yml}, using
+\texttt{build: ./hdfs} to build the image from the local context:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_2_compose_hdfs.png}
+    \caption{docker-compose.yml with HDFS service added}
+\end{figure}
+
+\par
+The container was started with Docker Compose and verified to be running alongside MongoDB:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_2_hdfs_up.png}
+    \caption{HDFS container running via \texttt{docker compose up -d hdfs}}
+\end{figure}
+
+\par
+To confirm the service started correctly, the HDFS NameNode WebUI was accessed at
+\texttt{http://localhost:9870}. The WebUI shows the NameNode status, the number of
+active DataNodes, and filesystem capacity information:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_2_hdfs_webui.png}
+    \caption{HDFS NameNode WebUI at \texttt{http://localhost:9870}}
+\end{figure}
