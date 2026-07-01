@@ -1,9 +1,8 @@
 \subsection{Deploy Postgres}
 
 \par
-The Postgres service was added to the \texttt{docker-compose.yml} using the official
-\texttt{postgres:9.6} image, configured with the credentials and database name that
-will be used by the Spark JDBC connector later:
+Next I added Postgres to the compose file. I used the official \texttt{postgres:9.6} image
+and set the credentials and database name to what the Spark JDBC connector will expect later:
 
 \begin{figure}[H]
     \centering
@@ -12,21 +11,20 @@ will be used by the Spark JDBC connector later:
 \end{figure}
 
 \par
-The container was started and verified to be running alongside MongoDB and HDFS:
+Brought it up and checked all three containers were running:
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{2_3_postgres_up.png}
-    \caption{Postgres container running via \texttt{docker compose up -d postgres}}
+    \caption{MongoDB, HDFS and Postgres containers running}
 \end{figure}
 
 \par
-To verify the service started correctly, the Postgres shell was accessed using
-\texttt{psql} and the \texttt{\textbackslash l} command was used to list the available
-databases, confirming that \texttt{sparkdb} was created successfully:
+I connected to the Postgres shell with \texttt{psql} and ran \texttt{\textbackslash l}
+to list the databases --- \texttt{sparkdb} shows up as expected:
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{2_3_postgres_shell.png}
-    \caption{Postgres shell showing available databases via \texttt{\textbackslash l}}
+    \caption{Postgres shell --- \texttt{sparkdb} confirmed with \texttt{\textbackslash l}}
 \end{figure}
