@@ -42,3 +42,41 @@ bin/spark-shell \
     \includegraphics[width=0.9\textwidth]{2_6_spark_shell_started.png}
     \caption{Spark shell successfully started with the \texttt{scala>} prompt}
 \end{figure}
+
+\par
+To verify the running application, I attempted to access the Spark Application WebUI
+at \texttt{http://localhost:4040}. The port was not initially exposed, so I added it
+to the \texttt{spark-master} service in \texttt{docker-compose.yml}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_6_expose_4040.png}
+    \caption{Port 4040 added to \texttt{spark-master} in \texttt{docker-compose.yml}}
+\end{figure}
+
+\par
+A \texttt{docker compose restart} on the master alone was not sufficient to bind
+the new port --- a full \texttt{docker compose down} and \texttt{up} was required:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_6_restart_master.png}
+    \caption{Restarting only the master --- port 4040 still not bound}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_6_full_restart.png}
+    \caption{Full \texttt{docker compose down} and \texttt{up} successfully binds port 4040}
+\end{figure}
+
+\par
+With the shell running and port 4040 exposed, the Spark Application WebUI became
+accessible at \texttt{http://localhost:4040}, confirming the application was running
+correctly:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_6_spark_app_webui.png}
+    \caption{Spark Application WebUI at \texttt{http://localhost:4040} showing the running shell application}
+\end{figure}
