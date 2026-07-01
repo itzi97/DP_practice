@@ -3,23 +3,23 @@
 \subsection{MongoDB Preparation}
 
 \par
-I started off by finding a compatible Docker image for `mongo` which wasn't
+I started off by finding a compatible Docker image for \texttt{mongo} which wasn't
 hard since there's already an official image:
+\href{https://hub.docker.com/_/mongo}{https://hub.docker.com/\_/mongo}
 
-\href{https://hub.docker.com/_/mongo}
-
-% Insert Screenshot 1
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_1_dockerhub_mongo.png}
+    \caption{Official MongoDB image on Docker Hub}
+\end{figure}
 
 \par
-I then set up the `docker-compose.yml` file with the appropiate lines for the
-MongoDB image:
+I then set up the \texttt{docker-compose.yml} file with the appropriate service block for
+the MongoDB image, selecting version 6.0 for compatibility with the MongoDB Spark Connector 10.x
+required by Spark 3.5.x:
 
-% Describe the MongoDB container setup and compatibility with Spark 3.5.x
-% Steps: find compatible image, deploy with necessary config
-
-% Screenshot placeholder:
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.9\textwidth]{2_1_mongodb_container_running.png}
-%     \caption{MongoDB container running}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_1_compose_mongodb.png}
+    \caption{docker-compose.yml with MongoDB service}
+\end{figure}
