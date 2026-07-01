@@ -1,11 +1,11 @@
 \subsection{Deploy HDFS}
 
 \par
-The HDFS container configuration was reused from the class activities, which provides a
+For HDFS I reused the container setup from the class activities --- it comes with a
 \texttt{Dockerfile} based on \texttt{apache/hadoop:3.3.6} and a startup script
-\texttt{start-hdfs.sh} that configures and launches the NameNode, DataNode, and
-SecondaryNameNode in pseudo-distributed mode. Both files were copied from the class
-repository into the \texttt{docker/hdfs/} directory:
+\texttt{start-hdfs.sh} that handles the configuration and starts the NameNode, DataNode,
+and SecondaryNameNode in pseudo-distributed mode. I copied both files into
+\texttt{docker/hdfs/}:
 
 \begin{figure}[H]
     \centering
@@ -14,8 +14,8 @@ repository into the \texttt{docker/hdfs/} directory:
 \end{figure}
 
 \par
-The HDFS service was then added to the \texttt{docker-compose.yml}, using
-\texttt{build: ./hdfs} to build the image from the local context:
+I then added the HDFS service to \texttt{docker-compose.yml}, pointing
+\texttt{build} to the local \texttt{./hdfs} context so Docker builds the image from those files:
 
 \begin{figure}[H]
     \centering
@@ -24,18 +24,18 @@ The HDFS service was then added to the \texttt{docker-compose.yml}, using
 \end{figure}
 
 \par
-The container was started with Docker Compose and verified to be running alongside MongoDB:
+Started it up and verified both MongoDB and HDFS were running:
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{2_2_hdfs_up.png}
-    \caption{HDFS container running via \texttt{docker compose up -d hdfs}}
+    \caption{HDFS and MongoDB containers running}
 \end{figure}
 
 \par
-To confirm the service started correctly, the HDFS NameNode WebUI was accessed at
-\texttt{http://localhost:9870}. The WebUI shows the NameNode status, the number of
-active DataNodes, and filesystem capacity information:
+To make sure HDFS came up correctly I opened the NameNode WebUI at
+\texttt{http://localhost:9870}. It shows the NameNode status, active DataNodes,
+and filesystem capacity --- everything looked good:
 
 \begin{figure}[H]
     \centering
