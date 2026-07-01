@@ -1,8 +1,4 @@
-# Assignment docker-compose — built incrementally
-# Step 2_1: MongoDB only
-
 services:
-
   mongodb:
     image: mongo:6.0
     container_name: mongodb
@@ -10,7 +6,7 @@ services:
       - "27017:27017"
     restart: unless-stopped
 
-# services to be added incrementally:
+# TODO:
 #   hdfs
 #   postgres
 #   spark-master
