@@ -23,3 +23,35 @@ required by Spark 3.5.x:
     \includegraphics[width=0.9\textwidth]{2_1_compose_mongodb.png}
     \caption{docker-compose.yml with MongoDB service}
 \end{figure}
+
+\par
+With the configuration in place, the MongoDB container was started using Docker Compose
+and verified to be running:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_1_mongodb_up.png}
+    \caption{MongoDB container running via \texttt{docker compose up -d mongodb}}
+\end{figure}
+
+\par
+The MongoDB shell was then accessed via \texttt{mongosh} to prepare the \texttt{practice} database
+required for the project:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_1_mongosh_enter.png}
+    \caption{Accessing the MongoDB shell via \texttt{docker exec -it mongodb mongosh}}
+\end{figure}
+
+\par
+The \texttt{practice} database was created by inserting a temporary document into a dummy collection,
+then deleting it to leave the database clean. Note that on the first attempt, a syntax error was made
+(\texttt{db.dummy.insertOne(\{( )\})} instead of \texttt{db.dummy.insertOne(\{\})}), which was
+quickly identified and corrected:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{2_1_mongosh_practice_db.png}
+    \caption{Creating the \texttt{practice} database and verifying it with \texttt{show dbs}}
+\end{figure}
