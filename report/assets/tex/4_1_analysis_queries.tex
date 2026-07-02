@@ -2,18 +2,97 @@
 
 \subsection{Queries}
 
-% For each query, show BOTH:
-%   - DataFrame API solution
-%   - SQL solution (using permanent tables, isTemporary = false)
+\par
+Before running any queries, the four datasets ingested in Phase 2 (countries, airlines, airports, routes) had to be re-loaded from their respective data lake locations (HDFS, Postgres, MongoDB) and registered as permanent Spark SQL tables. The assignment explicitly requires \texttt{isTemporary = false} for these tables, ruling out \texttt{createGlobalTempView} and \texttt{registerTempTable}. I used \texttt{saveAsTable} instead.
 
-% Queries:
-% Q1: How many flights depart from Brazil?
-% Q2: Which airports are located in the NW quadrant?
-% Q3: Which countries have the most airports above 2000 feet altitude?
-% Q4: Top 10 routes with the most stops?
-% Q5: Average number of routes per airline?
-% Q6: ISO code of countries with routes with empty codeshare?
+\par
+My first attempt at \texttt{saveAsTable} ran without any error but produced tables with zero rows. Running \texttt{DESCRIBE FORMATTED} on the resulting table revealed the problem: with no explicit path, Spark's default \texttt{spark.sql.warehouse.dir} resolved to a local filesystem path (\texttt{file:/opt/spark/spark-warehouse/...}). On a multi-container Spark Standalone cluster, ``local'' means local to whichever worker executed the write task \textemdash\ the Parquet files were written to a worker's private disk, invisible to the driver and to any subsequent read. The fix was to pass an explicit HDFS path via the \texttt{path} option on each write, so the managed table data lives in a location every container can reach:
 
-\inputminted{scala}{../../code/p3_analysis.scala}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_1_hdfs_write_tables.png}
+	\caption{Registering the four permanent tables with explicit HDFS paths under \texttt{/practice/tables/}, after diagnosing the local-warehouse-directory issue}
+\end{figure}
 
-% Screenshots: SHOW TABLES (isTemporary=false), results of each query
+\par
+With the tables correctly backed by HDFS, \texttt{SHOW TABLES} confirms all four are registered under the \texttt{practice} database with \texttt{isTemporary = false}:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_1_show_tables_practice.png}
+	\caption{\texttt{SHOW TABLES IN practice} \textemdash\ countries, airlines, airports, and routes all registered as permanent tables}
+\end{figure}
+
+\par
+For each of the following queries, I used both the DataFrame API and an equivalent SQL statement against the permanent tables, and confirmed the two approaches returned identical results.
+
+\subsubsection*{Q1: How many flights depart from Brazil?}
+
+\par
+Filtering \texttt{routes} on \texttt{source\_country = 'Brazil'} and counting gives 1304 flights, matching between the DataFrame API and SQL:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_1_Q1.png}
+	\caption{Q1 result: 1304 flights depart from Brazil (DataFrame API and SQL)}
+\end{figure}
+
+\subsubsection*{Q2: Which airports are located in the NW quadrant?}
+
+\par
+This filters the \texttt{hemisphere\_quadrant} column (derived in Phase 2 via UDF) for the value \texttt{NW}. Results are airports with positive latitude and negative longitude, such as those across Greenland, Iceland, and Canada:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_1_Q2.png}
+	\caption{Q2 result: airports in the NW quadrant (DataFrame API and SQL)}
+\end{figure}
+
+\subsubsection*{Q3: Which countries have the most airports above 2000 feet altitude?}
+
+\par
+Filtering \texttt{airports} on \texttt{altitude > 2000}, grouping by country, and ordering by count descending. The United States leads with 234 airports above 2000 feet, followed by China (76), South Africa (66), and Brazil (63):
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_1_Q3.png}
+	\caption{Q3 result: countries ranked by number of airports above 2000 feet altitude}
+\end{figure}
+
+\subsubsection*{Q4: What are the top 10 routes with the most stops?}
+
+\par
+Ordering \texttt{routes} by \texttt{stops} descending and taking the top 10. Note that the OpenFlights \texttt{stops} field in this dataset is effectively binary in practice \textemdash\ the maximum value present is 1, so the ``top 10'' result is a set of 10 one-stop routes rather than a strict ranking by increasingly large stop counts:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_1_Q4.png}
+	\caption{Q4 result: top 10 routes by number of stops (all tied at 1 stop)}
+\end{figure}
+
+\subsubsection*{Q5: What is the average number of routes per airline?}
+
+\par
+Grouping \texttt{routes} by \texttt{airline\_id}, counting routes per airline, then averaging across airlines gives 127.42 routes per airline on average:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_1_Q5.png}
+	\caption{Q5 result: average of 127.42 routes per airline}
+\end{figure}
+
+\subsubsection*{Q6: What is the ISO code of the countries that have routes with an empty codeshare?}
+
+\par
+This query filters \texttt{routes} where \texttt{codeshare} is null or an empty string, then joins the distinct source countries against the \texttt{countries} table to obtain the ISO code.
+
+\par
+My first pass at the DataFrame API version returned 208 distinct country/ISO-code pairs, while the SQL version returned 207. The discrepancy traced back to a genuine duplicate in the source \texttt{countries.txt} data: India appears twice, with the same \texttt{name} and \texttt{iso\_code} but a different \texttt{dafif\_code}. In the DataFrame API version, \texttt{.distinct()} was applied only to \texttt{source\_country} \emph{before} the join, so the join against two identical India rows produced two duplicate output rows that nothing removed afterward. The SQL version applied \texttt{DISTINCT} \emph{after} the join, on the full \texttt{(source\_country, iso\_code)} pair, which collapsed the duplicate. Adding a second \texttt{.distinct()} after the join in the DataFrame API version brought both approaches to the same 207 rows:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_1_Q6.png}
+	\caption{Q6 result: 207 countries with routes containing an empty codeshare (DataFrame API and SQL, matching after fixing a duplicate-row discrepancy)}
+\end{figure}
+
+\inputminted[firstline=1,lastline=181]{scala}{../../code/3_analysis.scala}
