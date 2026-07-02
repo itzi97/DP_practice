@@ -1,13 +1,28 @@
 \subsection{Airports}
 
-% Describe:
-% 1. Loading airports.dat as DataFrame (spark.read.csv)
-% 2. Defining and registering UDF for hemisphere_quadrant (NE/NW/SE/SW)
-% 3. Applying UDF to create new column
-% 4. Writing to Postgres airports table via JDBC
-% 5. Reading back with partitionColumn, lowerBound, upperBound, numPartitions
-% 6. Justify the 4 JDBC partition parameters and explain their utility
+\par
+I started by reading \texttt{airports.dat} from the data directory mounted inside the Spark container at \texttt{/data/}. Since the file is in CSV format and has no header row, I loaded it with the CSV connector, inferred the schema, and assigned the expected column names:
 
-\inputminted{scala}{../../code/p2_airports.scala}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{3_3_csv_read.png}
+	\caption{Loading \texttt{airports.dat} as a DataFrame and displaying the first rows}
+\end{figure}
 
-% Screenshots: UDF definition, DataFrame, Postgres write, read with partitioning
+\par
+Then I defined and registered a UDF that determines the geographic quadrant of each airport based on its latitude and longitude. Using this UDF, I added the \texttt{hemisphere\_quadrant} column to the DataFrame:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{3_3_udfs.png}
+	\caption{Creating the \texttt{hemisphere\_quadrant} column with a UDF}
+\end{figure}
+
+\par
+After that, I stored the resulting DataFrame in the \texttt{airports} table of the Postgres database using Spark's JDBC connector. Once the write completed, I read the table back from Postgres and displayed the first five rows to verify that the ingestion was successful:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{3_3_postgres_write.png}
+	\caption{Writing the airports DataFrame to Postgres and verifying the stored data}
+\end{figure}

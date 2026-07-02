@@ -1,12 +1,37 @@
 \subsection{Airlines}
 
-% Describe:
-% 1. Loading airlines.dat as DataFrame (spark.read.csv)
-% 2. Normalizing 'active' column: Y->1, N/n->0 (Integer)
-% 3. Filtering out inactive airlines
-% 4. Writing to HDFS /practice/airlines/ as Parquet partitioned by country
-% 5. Reading back and showing 5 rows
+\par
+I started by reading \texttt{airlines.dat} from the data directory mounted inside the Spark container at \texttt{/data/}. Since the file is in CSV format and has no header row, I loaded it with the CSV connector, inferred the schema, and assigned the expected column names:
 
-\inputminted{scala}{../../code/p2_airlines.scala}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{3_2_read_csv.png}
+	\caption{Loading \texttt{airlines.dat} as a DataFrame and displaying the first rows}
+\end{figure}
 
-% Screenshots: DataFrame load, active column transform, HDFS write, show 5 rows
+\par
+Then I transformed the \texttt{active} column from its original string representation to an integer, mapping \texttt{Y} to \texttt{1} and the rest of the values to \texttt{0}. After that, I filtered out the airlines that were not active so that only valid airlines remained in the DataFrame:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{3_2_transform_df.png}
+	\caption{Transforming the \texttt{active} column and filtering out inactive airlines}
+\end{figure}
+
+\par
+Before storing the result, I created the target HDFS directory \texttt{/practice/airlines} to make sure the path existed and was writable by Spark:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{3_2_hdfs_mkdir.png}
+	\caption{Creating the target HDFS directory for the airlines dataset}
+\end{figure}
+
+\par
+Finally, I wrote the cleaned DataFrame to HDFS in Parquet format, partitioned by the \texttt{country} column. After the write completed, I read the dataset back from HDFS and displayed the first five rows to verify that the ingestion was successful:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{3_2_hdfs_write.png}
+	\caption{Successful write of the airlines DataFrame to HDFS and verification by reading the stored data}
+\end{figure}
