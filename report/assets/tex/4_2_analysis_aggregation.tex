@@ -18,16 +18,10 @@ The logic: for each route, I joined the destination airport to obtain its \textt
 \par
 The result was written to HDFS in Parquet format at \texttt{/practice/aggregations/} and registered as a permanent table (\texttt{isTemporary = false}) using \texttt{CREATE TABLE ... USING PARQUET LOCATION}, then read back to confirm the write:
 
-% TODO: screenshot pending - capture the write + CREATE TABLE + read-back
-% sequence together (aggregationsDf.write.parquet(...), CREATE TABLE ...
-% USING PARQUET LOCATION 'hdfs://hdfs:9000/practice/aggregations', and the
-% final SELECT * FROM aggregations read-back). Save as
-% 4_2_aggregation_persist.png and uncomment the figure block below.
-%
-% \begin{figure}[H]
-% 	\centering
-% 	\includegraphics[width=0.9\textwidth]{4_2_aggregation_persist.png}
-% 	\caption{Writing the aggregation to Parquet at /practice/aggregations/, registering it as a permanent table, and reading it back to verify}
-% \end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{4_2_aggregation_persist.png}
+	\caption{Writing the aggregation to Parquet at /practice/aggregations/, registering it as a permanent table, and reading it back to verify}
+\end{figure}
 
 \inputminted[firstlinenumber=183,firstline=183]{scala}{../../code/3_analysis.scala}
