@@ -2,13 +2,56 @@
 
 \subsection{Countries}
 
-% Describe:
-% 1. Loading countries.txt into RDD (sc.textFile)
-% 2. Transformations to parse name::X ## iso_code::Y ## dafif_code::Z format
-% 3. Converting RDD to DataFrame
-% 4. Writing to HDFS /practice/countries/ as CSV
-% 5. Reading back and showing 5 rows
+\par
+I started by loading \texttt{countries.txt} from the data directory mounted inside the Spark container at \texttt{/data/}. Since the file uses a non-standard format, I first read it as an RDD and then transformed each line into a structured record:
 
-\inputminted{scala}{../../code/p2_countries.scala}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{3_1_countries_read.png}
+    \caption{Loading \texttt{countries.txt} as an RDD from the mounted data directory}
+\end{figure}
 
-% Screenshots: RDD load, transformations, HDFS write, show 5 rows
+\par
+After splitting each line by \texttt{" ## "} and extracting the values after \texttt{"::"}, I converted the result into a DataFrame with the schema \texttt{name}, \texttt{iso\_code}, and \texttt{dafif\_code}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{3_1_countries_rdd_to_df.png}
+    \caption{Transformation of the countries RDD into a structured DataFrame}
+\end{figure}
+
+\par
+When I tried to write the DataFrame to HDFS, Spark returned a permission error because the target path did not yet exist or was not writable by the Spark user:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{3_1_countries_hdfs_attempt.png}
+    \caption{Initial attempt to write the countries DataFrame to HDFS, which failed due to permissions}
+\end{figure}
+
+\par
+To fix that, I created the \texttt{/practice} directory in HDFS and updated its permissions so the Spark user could write into it:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{3_1_hdfs_permissions.png}
+    \caption{Creation of the target HDFS directory and permission update}
+\end{figure}
+
+\par
+After that, I wrote the DataFrame in CSV format to HDFS successfully:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{3_1_countries_hdfs_write.png}
+    \caption{Successful write of the countries DataFrame to HDFS in CSV format}
+\end{figure}
+
+\par
+Finally, I read the data back from HDFS and displayed the first five rows to verify that the ingestion was correct:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{3_1_countries_hdfs_read.png}
+    \caption{Reading the countries data back from HDFS and displaying the first five rows}
+\end{figure}
