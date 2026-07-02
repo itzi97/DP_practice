@@ -2,7 +2,6 @@
 docker/data/
 
 # LaTeX build artifacts
-report/*.pdf
 report/*.aux
 report/*.log
 report/*.out
