@@ -1,12 +1,41 @@
 \subsection{Routes}
 
-% Describe:
-% 1. Loading routes.dat as DataFrame (spark.read.csv)
-% 2. Joining with countries data from HDFS /practice/countries/ to add source_country and destination_country
-% 3. Removing routes from inactive airlines
-% 4. Writing to MongoDB routes collection in practice database
-% 5. Reading back and showing 5 rows
+The routes dataset was loaded from \texttt{routes.dat} into a Spark DataFrame using the CSV connector. Since the file does not provide headers, the corresponding column names were assigned manually to match the OpenFlights schema. This initial load was verified by displaying a sample of the dataset.
 
-\inputminted{scala}{../../code/p2_routes.scala}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{assets/imgs/3_4_csv_read.png}
+	\caption{Initial routes CSV read}
+\end{figure}
 
-% Screenshots: DataFrame load, joins, MongoDB write, show 5 rows
+To enrich the routes data, a reduced airport lookup table was created from the airports dataset. This lookup retained only the airport IATA code and the country name, which allowed the source and destination airports in each route to be matched with their respective countries. The first join added the country of the source airport, and the second join added the country of the destination airport. After these joins, the routes dataset contained two new columns with the corresponding source and destination country information.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{assets/imgs/3_4_iata_sourcecountry_countries.png}
+	\caption{Airport lookup and country enrichment for routes}
+\end{figure}
+
+The next step was to remove routes operated by inactive airlines. For that purpose, the airlines dataset was reloaded, the \texttt{active} field was normalized so that active airlines could be identified consistently, and only the routes associated with active airlines were retained. The resulting dataset therefore contains only valid routes from active carriers.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{assets/imgs/3_4_routes_active.png}
+	\caption{Routes after filtering inactive airlines}
+\end{figure}
+
+Once the routes were enriched and filtered, the final dataset was written to MongoDB in the \texttt{practice.routes} collection. After the write operation, the data was read back from MongoDB to confirm that persistence had been successful. This verification step ensured that the collection contains the expected route information with the new country columns included.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{assets/imgs/3_4_mongo_write.png}
+	\caption{Routes written to MongoDB}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{assets/imgs/3_4_mongo_read.png}
+	\caption{Routes read back from MongoDB}
+\end{figure}
+
+Overall, this process produced a cleaned and enriched routes table with source and destination country information, restricted to active airlines only, and stored it in MongoDB for later analysis.
