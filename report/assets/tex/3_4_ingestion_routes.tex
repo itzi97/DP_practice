@@ -1,41 +1,55 @@
 \subsection{Routes}
 
-The routes dataset was loaded from \texttt{routes.dat} into a Spark DataFrame using the CSV connector. Since the file does not provide headers, the corresponding column names were assigned manually to match the OpenFlights schema. This initial load was verified by displaying a sample of the dataset.
+\par
+The routes ingestion step was the most involved because the routes dataset stores airport IATA codes, while the report requires the country name of both the source and destination airports. For that reason, I first loaded the routes file as a CSV DataFrame and then built an airport lookup table from the airports dataset to translate airport codes into country names.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{assets/imgs/3_4_csv_read.png}
-	\caption{Initial routes CSV read}
+	\includegraphics[width=0.9\textwidth]{3_4_routes_csv_read.png}
+	\caption{Initial CSV load of \texttt{routes.dat}}
 \end{figure}
 
-To enrich the routes data, a reduced airport lookup table was created from the airports dataset. This lookup retained only the airport IATA code and the country name, which allowed the source and destination airports in each route to be matched with their respective countries. The first join added the country of the source airport, and the second join added the country of the destination airport. After these joins, the routes dataset contained two new columns with the corresponding source and destination country information.
+\par
+My first attempt tried to enrich routes directly by joining the source airport code against the countries dataset. That produced \texttt{NULL} values because the join keys were incompatible: route airport codes such as \texttt{AER} and \texttt{ASF} do not match country ISO codes.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{assets/imgs/3_4_iata_sourcecountry_countries.png}
-	\caption{Airport lookup and country enrichment for routes}
+	\includegraphics[width=0.9\textwidth]{3_4_routes_countries_join_attempt.png}
+	\caption{Incorrect direct join attempt between routes and countries, resulting in null matches}
 \end{figure}
 
-The next step was to remove routes operated by inactive airlines. For that purpose, the airlines dataset was reloaded, the \texttt{active} field was normalized so that active airlines could be identified consistently, and only the routes associated with active airlines were retained. The resulting dataset therefore contains only valid routes from active carriers.
+\par
+To fix that, I used the airports DataFrame as an intermediate mapping, selecting the airport IATA code and its country. I then joined the routes DataFrame against that mapping using \texttt{source\_airport} as the key and renamed the resulting country column to \texttt{source\_country}. This produced valid source-country values.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{assets/imgs/3_4_routes_active.png}
-	\caption{Routes after filtering inactive airlines}
+	\includegraphics[width=0.9\textwidth]{3_4_routes_countries_join_fixed.png}
+	\caption{Correct source-country enrichment using the airport-to-country mapping}
 \end{figure}
 
-Once the routes were enriched and filtered, the final dataset was written to MongoDB in the \texttt{practice.routes} collection. After the write operation, the data was read back from MongoDB to confirm that persistence had been successful. This verification step ensured that the collection contains the expected route information with the new country columns included.
+\par
+I repeated the same process for the destination airport and obtained both \texttt{source\_country} and \texttt{destination\_country}. At that point, the routes DataFrame contained the required geographic enrichment for each route.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{assets/imgs/3_4_mongo_write.png}
-	\caption{Routes written to MongoDB}
+	\includegraphics[width=0.9\textwidth]{3_4_routes_source_destination_country.png}
+	\caption{Final enriched routes DataFrame with source and destination country columns}
 \end{figure}
+
+\par
+The assignment also required removing routes operated by inactive airlines. Since the airlines DataFrame had already been normalized to keep only active airlines, I used the active airline identifiers as a filter and kept only the matching routes. This ensured that the final routes dataset contained only valid airline-operated routes.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{assets/imgs/3_4_mongo_read.png}
-	\caption{Routes read back from MongoDB}
+	\includegraphics[width=0.9\textwidth]{3_4_routes_inactive_airlines_filtered.png}
+	\caption{Routes after filtering out inactive airlines}
 \end{figure}
 
-Overall, this process produced a cleaned and enriched routes table with source and destination country information, restricted to active airlines only, and stored it in MongoDB for later analysis.
+\par
+Finally, I wrote the resulting DataFrame to MongoDB in the \texttt{practice.routes} collection and read it back to verify the content. The MongoDB output confirmed that the enrichment columns and the route fields were stored correctly.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{3_4_routes_mongodb_read.png}
+	\caption{Routes stored in MongoDB and read back for verification}
+\end{figure}

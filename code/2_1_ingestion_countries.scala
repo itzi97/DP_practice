@@ -19,11 +19,11 @@ val countriesDS = countriesRDD
   }
 
 // 3. Convert to DataFrame
-val countriesDF = countriesDS.toDF()
-countriesDF.show(5, false)
+val countriesDf = countriesDS.toDF()
+countriesDf.show(5, false)
 
 // 4. Write to HDFS in CSV format
-countriesDF.write
+countriesDf.write
   .mode("overwrite")
   .option("header", "true")
   .csv("hdfs://hdfs:9000/practice/countries")

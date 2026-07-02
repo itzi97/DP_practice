@@ -1,16 +1,16 @@
 import spark.implicits._
 import org.apache.spark.sql.functions._
 
-val airlinesDF = spark.read
+val airlinesDf = spark.read
   .option("header", "false")
   .option("inferSchema", "true")
   .csv("/data/airlines.dat")
   .toDF("airline_id", "name", "alias", "iata", "icao", "callsign", "country", "active")
 
-airlinesDF.printSchema()
-airlinesDF.show(5, false)
+airlinesDf.printSchema()
+airlinesDf.show(5, false)
 
-val airlinesClean = airlinesDF
+val airlinesClean = airlinesDf
   .withColumn("active", when(upper(col("active")) === "Y", 1).otherwise(0))
   .filter(col("active") === 1)
 
