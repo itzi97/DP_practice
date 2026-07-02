@@ -32,10 +32,16 @@ val routesDf = spark.read
 spark.sql("CREATE DATABASE IF NOT EXISTS practice")
 spark.sql("USE practice")
 
-countriesDf.write.mode("overwrite").saveAsTable("countries")
-airlinesDf.write.mode("overwrite").saveAsTable("airlines")
-airportsDf.write.mode("overwrite").saveAsTable("airports")
-routesDf.write.mode("overwrite").saveAsTable("routes")
+// NOTE: explicit HDFS `path` option is required here. On a multi-container
+// Spark Standalone cluster, the default spark.sql.warehouse.dir resolves to
+// LOCAL disk on whichever worker executes the write - invisible to other
+// containers and to later reads. Without this, saveAsTable silently produces
+// empty tables (no error thrown). Confirmed via DESCRIBE FORMATTED during
+// debugging: default Location was file:/opt/spark/spark-warehouse/...
+countriesDf.write.option("path", "hdfs://hdfs:9000/practice/tables/countries").saveAsTable("countries")
+airlinesDf.write.option("path", "hdfs://hdfs:9000/practice/tables/airlines").saveAsTable("airlines")
+airportsDf.write.option("path", "hdfs://hdfs:9000/practice/tables/airports").saveAsTable("airports")
+routesDf.write.option("path", "hdfs://hdfs:9000/practice/tables/routes").saveAsTable("routes")
 
 // Verify: isTemporary must be false for all four
 spark.sql("SHOW TABLES").show(false)
@@ -146,12 +152,20 @@ q5_sql.show()
 // ---------------------------------------------------------------------------
 
 // DataFrame API
+// NOTE: countries.txt contains a genuine duplicate row for India (same name
+// and iso_code, different dafif_code). A .distinct() after the join is
+// required or this branch overcounts by 1 vs. the SQL version below, since
+// the first .distinct() (on source_country alone, pre-join) does not remove
+// the duplicate join match. Confirmed via count(): 208 without the second
+// .distinct(), 207 with it - matching the SQL result.
 val q6_df = spark.table("routes")
   .filter(col("codeshare").isNull || trim(col("codeshare")) === "")
   .select("source_country")
   .distinct()
   .join(spark.table("countries"), col("source_country") === col("name"))
   .select("source_country", "iso_code")
+  .distinct()
+  .orderBy("source_country")
 q6_df.show(false)
 
 // SQL
@@ -160,6 +174,7 @@ val q6_sql = spark.sql("""
   FROM routes r
   JOIN countries c ON r.source_country = c.name
   WHERE r.codeshare IS NULL OR TRIM(r.codeshare) = ''
+  ORDER BY r.source_country
 """)
 q6_sql.show(false)
 
@@ -169,12 +184,17 @@ q6_sql.show(false)
 // airports with timezone 'O'?
 // ---------------------------------------------------------------------------
 
+// NOTE: OpenFlights' airports.dat has two distinct fields that both relate
+// to "timezone": a numeric UTC offset (named `timezone` in our ingested
+// schema) and a single-letter DST region code (named `dst` in our schema:
+// E/A/S/O/Z/N/U). The value 'O' is only valid in the letter-coded field, so
+// this task's "timezone 'O'" refers to the `dst` column, not `timezone`.
 val routesWithDestTz = spark.table("routes")
   .join(
-    spark.table("airports").select(col("iata").alias("dest_iata"), col("timezone").alias("dest_timezone")),
+    spark.table("airports").select(col("iata").alias("dest_iata"), col("dst").alias("dest_dst")),
     col("destination_airport") === col("dest_iata")
   )
-  .filter(col("dest_timezone") === "O")
+  .filter(col("dest_dst") === "O")
 
 val qualifyingAirports = routesWithDestTz
   .groupBy("source_airport", "source_country")
