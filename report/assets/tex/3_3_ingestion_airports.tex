@@ -19,10 +19,22 @@ Then I defined and registered a UDF that determines the geographic quadrant of e
 \end{figure}
 
 \par
-After that, I stored the resulting DataFrame in the \texttt{airports} table of the Postgres database using Spark's JDBC connector. Once the write completed, I read the table back from Postgres and displayed the first five rows to verify that the ingestion was successful:
+After that, I stored the resulting DataFrame in the \texttt{airports} table of the Postgres database using Spark's JDBC connector. Once the write completed, I read the table back from Postgres using the \texttt{partitionColumn}, \texttt{lowerBound}, \texttt{upperBound}, and \texttt{numPartitions} options, and displayed the first five rows to verify that the ingestion was successful:
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_3_postgres_write.png}
-	\caption{Writing the airports DataFrame to Postgres and verifying the stored data}
+	\caption{Writing the airports DataFrame to Postgres and verifying the stored data, using \texttt{partitionColumn}, \texttt{lowerBound}, \texttt{upperBound} and \texttt{numPartitions} on the read}
 \end{figure}
+
+\par
+By default, \texttt{spark.read.jdbc} opens a single connection and pulls the entire table through one task, regardless of how many executors are available. The four properties above tell Spark to split the read into several parallel range queries instead, each handled by a separate JDBC connection and task:
+
+\begin{itemize}
+	\item \texttt{partitionColumn = "airport\_id"}: this is the table's numeric primary key, so it can be used to split rows into contiguous, non-overlapping ranges without scanning the data first. It is also close to evenly distributed, which keeps the resulting partitions similarly sized.
+	\item \texttt{lowerBound = 1} and \texttt{upperBound = 14000}: these bracket the actual range of \texttt{airport\_id} in the dataset (the ingested data runs from 1 to 14110). Spark uses these two values only to compute the width of each partition's range \textemdash\ they do not filter out rows, since anything below \texttt{lowerBound} is included in the first partition and anything above \texttt{upperBound} is included in the last one.
+	\item \texttt{numPartitions = 4}: this sets how many parallel range queries are issued, matching the number of cores available per worker in the Spark Standalone cluster (Section 2.5) so that each partition's read can run on its own task without contending for the same core.
+\end{itemize}
+
+\par
+The practical benefit is read throughput: instead of one task serially pulling roughly 7{,}700 rows through a single connection, four tasks each pull their own \texttt{airport\_id} range concurrently, cutting wall-clock read time and avoiding a single-task bottleneck when this table is later joined against \texttt{routes} in Section 3.4.
