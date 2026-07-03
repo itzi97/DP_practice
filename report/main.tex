@@ -16,14 +16,23 @@
 \usepackage{caption}
 \usepackage{enumitem}
 
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
 % ---------------------------------------------------------------------------
-% Colour palette
+% Colour palette -- brand blue (UTAD), modern/neutral
 % ---------------------------------------------------------------------------
-\definecolor{accent}{HTML}{1B5E73}   % deep teal, used for headings and links
-\definecolor{accentlight}{HTML}{E8F1F3}
-\definecolor{rule}{HTML}{CBD5D9}
-\definecolor{bodytext}{HTML}{1A1A1A}
-\definecolor{muted}{HTML}{5C6B70}
+\definecolor{brandblue}{HTML}{0065EF}   % exact logo blue -- captions AND references, matched
+\definecolor{ink}{HTML}{1A1A1A}         % near-black body text and headings
+\definecolor{gray}{HTML}{5C6570}        % muted / caption description text
+\definecolor{barblue}{HTML}{8A8F94}     % subtle grey -- header rule only
+\definecolor{rulegray}{HTML}{D9DEE3}    % light neutral rule tone
+
+\colorlet{accent}{ink}
+\colorlet{linkaccent}{brandblue}
+\colorlet{rule}{rulegray}
+\colorlet{bodytext}{ink}
+\colorlet{muted}{gray}
 
 \color{bodytext}
 
@@ -32,10 +41,10 @@
 % ---------------------------------------------------------------------------
 \usepackage[
 	colorlinks=true,
-	linkcolor=accent,
-	citecolor=accent,
-	urlcolor=accent,
-	pdftitle={Data Processing -- Mandatory Practice},
+	linkcolor=linkaccent,
+	citecolor=linkaccent,
+	urlcolor=linkaccent,
+	pdftitle={Data Processing; Mandatory Practice},
 	pdfauthor={Itziar Morales},
 	pdfsubject={Data Processing},
 	bookmarksnumbered=true
@@ -73,22 +82,22 @@
 % Captions
 % ---------------------------------------------------------------------------
 \captionsetup{
-	labelfont={bf,color=accent},
+	labelfont={bf,color=linkaccent},
 	textfont={color=muted},
 	font=small,
 	skip=6pt
 }
 
 % ---------------------------------------------------------------------------
-% Header / footer
+% Header / footer -- thin coloured bar instead of a hairline rule
 % ---------------------------------------------------------------------------
-\renewcommand{\sectionmark}[1]{\markright{\thesection\ \ \ #1}}
+\renewcommand{\sectionmark}[1]{\markboth{\thesection\ \ \ #1}{}}
 \pagestyle{fancy}
 \fancyhf{}
-\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{{\color{barblue}\hrule height 0.5pt width\headwidth}}
 \renewcommand{\footrulewidth}{0pt}
 \fancyhead[L]{\small\color{muted}\leftmark}
-\fancyhead[R]{\small\color{muted}Data Processing -- Mandatory Practice}
+\fancyhead[R]{\raisebox{-0.15\height}{\includegraphics[height=0.4cm]{utad_logo.png}}}
 \fancyfoot[C]{\small\color{muted}\thepage}
 
 \fancypagestyle{plain}{
@@ -98,29 +107,30 @@
 }
 
 % ---------------------------------------------------------------------------
-% Title page
+% Title page metadata (used by hyperref only -- page itself is built manually
+% below to avoid \maketitle + titlepage overflowing onto a second page)
 % ---------------------------------------------------------------------------
-\pretitle{\begin{center}\LARGE\bfseries\color{accent}}
-\posttitle{\end{center}\vspace{-1em}}
-\preauthor{\begin{center}\large}
-\postauthor{\end{center}}
-\predate{\begin{center}\small\color{muted}}
-\postdate{\end{center}}
-
-\title{Data Processing\\[0.2em]\large Mandatory Practice\\[0.1em]\normalsize\normalfont Academic Year 2025--2026}
+\title{Data Processing}
 \author{Itziar Morales}
 \date{\today}
 
 \begin{document}
 
-\begin{titlepage}
-	\maketitle
-	\vfill
-	\begin{center}
-		{\color{muted}\small A Proof of Concept for air traffic analysis using Apache Spark, HDFS, Postgres, and MongoDB}
-	\end{center}
-	\vfill
-\end{titlepage}
+\thispagestyle{empty}
+\begin{center}
+	\includegraphics[width=2.6cm]{utad_logo.png}
+
+	\vspace{2em}
+	{\LARGE\bfseries\color{accent} Data Processing}\\[0.3em]
+	{\large\bfseries\color{accent} Mandatory Practice}
+
+	\vspace{1.3em}
+	{\large Itziar Morales}
+
+	\vspace{0.4em}
+	{\small\color{muted} \today}
+\end{center}
+\newpage
 
 {\hypersetup{linkcolor=accent}
 \tableofcontents}
@@ -131,7 +141,7 @@
 \input{assets/tex/1_0_intro}
 \newpage
 
-\section{Phase 1 \textemdash\ Environment Setup}
+\section{Phase 1; Environment Setup}
 \label{sec:phase1}
 \input{assets/tex/2_1_docker_mongodb}
 \input{assets/tex/2_2_docker_hdfs}
@@ -141,7 +151,7 @@
 \input{assets/tex/2_6_spark_shell}
 \newpage
 
-\section{Phase 2 \textemdash\ Data Ingestion}
+\section{Phase 2; Data Ingestion}
 \label{sec:phase2}
 \input{assets/tex/3_1_ingestion_countries}
 \input{assets/tex/3_2_ingestion_airlines}
@@ -149,7 +159,7 @@
 \input{assets/tex/3_4_ingestion_routes}
 \newpage
 
-\section{Phase 3 \textemdash\ Data Analysis}
+\section{Phase 3; Data Analysis}
 \label{sec:phase3}
 \input{assets/tex/4_1_analysis_queries}
 \input{assets/tex/4_2_analysis_aggregation}
