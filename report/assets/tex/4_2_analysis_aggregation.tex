@@ -1,4 +1,5 @@
 \subsection{Persist Aggregated Data}
+\label{sec:4_2_analysis_aggregation}
 
 \par
 The final task was to persist an aggregation answering: how many airports does
@@ -10,7 +11,7 @@ OpenFlights' \texttt{airports.dat} actually has two different time-related
 fields: a numeric UTC offset, and a single-letter DST region code
 (\texttt{E}, \texttt{A}, \texttt{S}, \texttt{O}, \texttt{Z}, \texttt{N},
 \texttt{U}, covering Europe, US/Canada, South America, Australia, New
-Zealand, None, and Unknown). In my Phase 2 ingestion I called these
+Zealand, None, and Unknown). In my \hyperref[sec:phase2]{Phase 2} ingestion I called these
 \texttt{timezone} (the numeric one) and \texttt{dst} (the letter one). Since
 \texttt{'O'} isn't a valid UTC offset, it has to be the \texttt{dst} field. My
 first attempt filtered on \texttt{timezone} instead, which silently returned
@@ -21,7 +22,7 @@ Here's the logic: for each route, I joined the destination airport to get its
 \texttt{dst} code and filtered for \texttt{dst = 'O'}. Then I grouped by
 source airport to count how many of these routes come from each one, keeping
 only airports with 2 or more. Finally, I grouped those airports by country and
-counted them:
+counted them (\cref{fig:4-2-aggregation-result}):
 
 \begin{figure}[H]
 	\centering
@@ -29,6 +30,7 @@ counted them:
 	\caption{Aggregation result: number of qualifying airports per country,
 		ordered descending. Australia leads with 58, consistent with \texttt{'O'}
 		representing the Australian DST region}
+	\label{fig:4-2-aggregation-result}
 \end{figure}
 
 \par
@@ -36,11 +38,11 @@ I wrote the result to HDFS in Parquet format at
 \texttt{/practice/aggregations/}, registered it as a permanent table
 (\texttt{isTemporary = false}) with
 \texttt{CREATE TABLE ... USING PARQUET LOCATION}, then read it back to
-confirm the write:
+confirm the write (\cref{fig:4-2-aggregation-persist}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_2_aggregation_persist.png}
-	\caption{Writing the aggregation to Parquet at /practice/aggregations/,
-		registering it as a permanent table, and reading it back to verify}
+	\caption{Writing and verifying the \texttt{aggregations} table}
+	\label{fig:4-2-aggregation-persist}
 \end{figure}

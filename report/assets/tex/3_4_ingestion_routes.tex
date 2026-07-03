@@ -1,29 +1,32 @@
 \subsection{Routes}
+\label{sec:3_4_ingestion_routes}
 
 \par
 The routes ingestion step was the most involved because the routes dataset
 stores airport IATA codes, while the assignment requires the country name of both
 the source and destination airports. For that reason, I first loaded the routes
 file as a CSV DataFrame and then built an airport lookup table from the airports
-dataset to translate airport codes into country names.
+dataset to translate airport codes into country names (\cref{fig:3-4-routes-csv-read}).
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_4_routes_csv_read.png}
 	\caption{Initial CSV load of \texttt{routes.dat}}
+	\label{fig:3-4-routes-csv-read}
 \end{figure}
 
 \par
 My first attempt tried to enrich routes directly by joining the source airport
 code against the countries dataset. That produced \texttt{NULL} values because
 the join keys were incompatible: route airport codes such as \texttt{AER} and
-\texttt{ASF} do not match country ISO codes.
+\texttt{ASF} do not match country ISO codes (\cref{fig:3-4-routes-countries-join-attempt}).
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_4_routes_countries_join_attempt.png}
 	\caption{Incorrect direct join attempt between routes and countries,
 		resulting in null matches}
+	\label{fig:3-4-routes-countries-join-attempt}
 \end{figure}
 
 \par
@@ -32,50 +35,54 @@ selecting the airport IATA code and its country. I then joined the routes
 DataFrame against that mapping using \texttt{source\_airport} as the key and
 renamed the resulting country column to \texttt{source\_country}. This produced
 valid source-country values but was a more involved process than I thought it
-would be.
+would be (\cref{fig:3-4-routes-countries-join-fixed}).
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_4_routes_countries_join_fixed.png}
 	\caption{Correct source-country enrichment using the airport-to-country
 		mapping}
+	\label{fig:3-4-routes-countries-join-fixed}
 \end{figure}
 
 \par
 I basically repeated the same process for the destination airport and obtained
 both \texttt{source\_country} and \texttt{destination\_country}. At that point,
 the routes DataFrame contained the required geographic enrichment for each
-route.
+route (\cref{fig:3-4-routes-source-destination-country}).
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_4_routes_source_destination_country.png}
 	\caption{Final enriched routes DataFrame with source and destination country
 		columns}
+	\label{fig:3-4-routes-source-destination-country}
 \end{figure}
 
 \par
 The assignment also required removing routes operated by inactive airlines.
 I'd already filtered \texttt{airlinesDf} down to active airlines back in
-Section 3.2, so here I reused those airline IDs to filter out routes operated
+\cref{sec:3_2_ingestion_airlines}, so here I reused those airline IDs to filter out routes operated
 by inactive airlines. The raw routes data itself isn't filtered, so this join
 was the only thing removing them. This ensured that the final routes dataset
-contained only valid airline-operated routes.
+contained only valid airline-operated routes (\cref{fig:3-4-routes-inactive-airlines-filtered}).
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_4_routes_inactive_airlines_filtered.png}
 	\caption{Routes after filtering out inactive airlines}
+	\label{fig:3-4-routes-inactive-airlines-filtered}
 \end{figure}
 
 \par
 Finally, I wrote the resulting DataFrame to MongoDB in the
 \texttt{practice.routes} collection and read it back to verify the content. The
 MongoDB output confirmed that the enrichment columns and the route fields were
-stored correctly.
+stored correctly (\cref{fig:3-4-routes-mongodb-write-read}).
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_4_routes_mongodb_write_read.png}
 	\caption{Routes stored in MongoDB and read back for verification}
+	\label{fig:3-4-routes-mongodb-write-read}
 \end{figure}

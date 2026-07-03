@@ -1,23 +1,26 @@
 \subsection{Deploy MongoDB}
+\label{sec:2_4_deploy_mongodb}
 
 \par
 With the MongoDB service already defined in \texttt{docker-compose.yml} from
-the preparation step, I started the container and checked it was up:
+the preparation step, I started the container and checked it was up (\cref{fig:2-4-mongodb-up}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_4_mongodb_up.png}
 	\caption{MongoDB container running}
+	\label{fig:2-4-mongodb-up}
 \end{figure}
 
 \par
 Then I opened the MongoDB shell to set up the \texttt{practice} database needed
-for the project:
+for the project (\cref{fig:2-4-mongosh-enter}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_4_mongosh_enter.png}
 	\caption{Accessing the MongoDB shell via \texttt{docker exec -it mongodb mongosh}}
+	\label{fig:2-4-mongosh-enter}
 \end{figure}
 
 \par
@@ -25,19 +28,21 @@ To create the database I inserted a temporary document into a dummy collection
 and then deleted it; MongoDB only persists a database once it has data. On the
 first try I made a syntax error (\texttt{\{( )\}} instead of \texttt{\{\}}),
 caught it immediately and ran the correct command. The \texttt{show dbs}
-output confirms \texttt{practice} was created successfully:
+output confirms \texttt{practice} was created successfully (\cref{fig:2-4-mongosh-practice-db}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_4_mongosh_practice_db.png}
 	\caption{Creating the \texttt{practice} database and verifying with \texttt{show dbs}}
+	\label{fig:2-4-mongosh-practice-db}
 \end{figure}
 
 \par
-Finally, I exited the MongoDB shell:
+Finally, I exited the MongoDB shell (\cref{fig:2-4-mongosh-exit}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_4_mongosh_exit.png}
 	\caption{Exiting the MongoDB shell}
+	\label{fig:2-4-mongosh-exit}
 \end{figure}

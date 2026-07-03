@@ -1,16 +1,18 @@
 \subsection{Airlines}
+\label{sec:3_2_ingestion_airlines}
 
 \par
 I started by reading \texttt{airlines.dat} from the data directory mounted
 inside the Spark container at \texttt{/data/}. Since the file is in CSV format
 and has no header row, I loaded it with the CSV connector, inferred the
-schema, and assigned the expected column names:
+schema, and assigned the expected column names (\cref{fig:3-2-read-csv}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_2_read_csv.png}
 	\caption{Loading \texttt{airlines.dat} as a DataFrame and displaying the
 		first rows}
+	\label{fig:3-2-read-csv}
 \end{figure}
 
 \par
@@ -18,34 +20,37 @@ Then I transformed the \texttt{active} column from its original string
 representation to an integer, mapping \texttt{Y} to \texttt{1} and the rest of
 the values to \texttt{0}. After that, I filtered out the airlines that were
 not active in the same step so that only valid airlines remained in the
-DataFrame:
+DataFrame (\cref{fig:3-2-transform-df}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_2_transform_df.png}
 	\caption{Transforming the \texttt{active} column and filtering out inactive airlines}
+	\label{fig:3-2-transform-df}
 \end{figure}
 
 \par
 Before storing the result, I created the target HDFS directory
 \texttt{/practice/airlines} to make sure the path existed and was writable by
-Spark (permissions were already set so I didn't have to set them this time):
+Spark (permissions were already set so I didn't have to set them this time) (\cref{fig:3-2-hdfs-mkdir}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_2_hdfs_mkdir.png}
 	\caption{Creating the target HDFS directory for the airlines dataset}
+	\label{fig:3-2-hdfs-mkdir}
 \end{figure}
 
 \par
 Finally, I wrote the cleaned DataFrame to HDFS in Parquet format, partitioned by
 the \texttt{country} column. After the write completed, I read the dataset back
 from HDFS and displayed the first five rows to verify that the ingestion was
-successful:
+successful (\cref{fig:3-2-hdfs-write}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_2_hdfs_write.png}
 	\caption{Successful write of the airlines DataFrame to HDFS and verification
 		by reading the stored data}
+	\label{fig:3-2-hdfs-write}
 \end{figure}

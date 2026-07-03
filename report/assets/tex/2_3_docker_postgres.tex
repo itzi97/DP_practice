@@ -1,34 +1,38 @@
 \subsection{Deploy Postgres}
+\label{sec:2_3_docker_postgres}
 
 \par
 Next I added Postgres to the compose file. I used the
 \href{https://hub.docker.com/_/postgres}{official image}
 (\texttt{postgres:9.6}) and set the credentials and database name to what the
-Spark JDBC connector will expect later:
+Spark JDBC connector will expect later (\cref{fig:2-3-compose-postgres}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_3_compose_postgres.png}
 	\caption{\texttt{docker-compose.yml} with Postgres service added}
+	\label{fig:2-3-compose-postgres}
 \end{figure}
 
 \par
-Brought it up and checked all three containers were running:
+Brought it up and checked all three containers were running (\cref{fig:2-3-postgres-up}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_3_postgres_up.png}
 	\caption{MongoDB, HDFS and Postgres containers running}
+	\label{fig:2-3-postgres-up}
 \end{figure}
 
 \par
 I connected to the Postgres shell with \texttt{psql} and ran
 \texttt{\textbackslash l} to list the databases, \texttt{sparkdb} shows up as
-expected:
+expected (\cref{fig:2-3-postgres-shell}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_3_postgres_shell.png}
 	\caption{Postgres shell, \texttt{sparkdb} confirmed with
 		\texttt{\textbackslash l}}
+	\label{fig:2-3-postgres-shell}
 \end{figure}

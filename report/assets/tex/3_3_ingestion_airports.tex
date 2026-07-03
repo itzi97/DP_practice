@@ -1,27 +1,30 @@
 \subsection{Airports}
+\label{sec:3_3_ingestion_airports}
 
 \par
 I started by reading \texttt{airports.dat} from the data directory mounted
 inside the Spark container at \texttt{/data/}. Since the file is in CSV format
 and has no header row, I loaded it with the CSV connector, inferred the schema,
-and assigned the expected column names (same as with Airlines):
+and assigned the expected column names (same as with Airlines) (\cref{fig:3-3-csv-read}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_3_csv_read.png}
 	\caption{Loading \texttt{airports.dat} as a DataFrame and displaying the
 		first rows}
+	\label{fig:3-3-csv-read}
 \end{figure}
 
 \par
 Then I defined and registered a UDF that determines the geographic quadrant of
 each airport based on its latitude and longitude. Using this UDF, I added the
-\texttt{hemisphere\_quadrant} column to the DataFrame:
+\texttt{hemisphere\_quadrant} column to the DataFrame (\cref{fig:3-3-udfs}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_3_udfs.png}
 	\caption{Creating the \texttt{hemisphere\_quadrant} column with a UDF}
+	\label{fig:3-3-udfs}
 \end{figure}
 
 \par
@@ -29,7 +32,7 @@ After that, I stored the resulting DataFrame in the \texttt{airports} table of
 the Postgres database using Spark's JDBC connector. Once the write completed, I
 read the table back from Postgres using the \texttt{partitionColumn},
 \texttt{lowerBound}, \texttt{upperBound}, and \texttt{numPartitions} options,
-and displayed the first five rows to verify that the ingestion was successful:
+and displayed the first five rows to verify that the ingestion was successful (\cref{fig:3-3-postgres-write}):
 
 \begin{figure}[H]
 	\centering
@@ -37,6 +40,7 @@ and displayed the first five rows to verify that the ingestion was successful:
 	\caption{Writing the airports DataFrame to Postgres and verifying the stored
 		data, using \texttt{partitionColumn}, \texttt{lowerBound},
 		\texttt{upperBound} and \texttt{numPartitions} on the read}
+	\label{fig:3-3-postgres-write}
 \end{figure}
 
 \par
@@ -56,7 +60,7 @@ into several parallel range queries instead, each with its own connection:
 	      Spark, they don't drop any rows outside that range, ids below 1 or
 	      above 14000 still end up in the first or last partition.
 	\item \texttt{numPartitions = 4}: mirrors the number of cores per worker
-	      in the cluster (Section 2.5) so the parallel reads don't compete for
+	      in the cluster (\cref{sec:2_5_docker_spark_cluster}) so the parallel reads don't compete for
 	      the same resources.
 \end{itemize}
 
@@ -65,4 +69,4 @@ Instead of pulling all 7{,}700 rows through a single connection, this runs
 four reads in parallel, each grabbing its own slice of \texttt{airport\_id}s.
 That reduces the chance of the connection becoming a bottleneck, especially
 useful since this table gets joined against \texttt{routes} later in
-Section 3.4.
+\cref{sec:3_4_ingestion_routes}.

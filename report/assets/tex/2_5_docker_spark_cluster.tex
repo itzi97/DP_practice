@@ -1,59 +1,65 @@
 \subsection{Deploy Spark Standalone Cluster}
+\label{sec:2_5_docker_spark_cluster}
 
 \par
 To set up the Spark Standalone cluster I added three services to
 \texttt{docker-compose.yml}: one master and two workers. The master is
 responsible for resource management and exposes the Standalone WebUI on port
-8080 and the master port on 7077:
+8080 and the master port on 7077 (\cref{fig:2-5-compose-spark-master}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_5_compose_spark_master.png}
 	\caption{Spark master service in docker-compose.yml}
+	\label{fig:2-5-compose-spark-master}
 \end{figure}
 
 \par
 Both workers share the same configuration, differing only in their container
 name and hostname. I chose the following resource allocation (4 cores and 8GB
-RAM each) based on the available hardware:
+RAM each) based on the available hardware (\cref{fig:2-5-computer-specs}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_5_computer_specs.png}
 	\caption{Machine specs used to determine worker resource allocation}
+	\label{fig:2-5-computer-specs}
 \end{figure}
 
 \par
 With 16 cores and 32GB total, 4/8GB per worker still leaves room for HDFS,
 Postgres and MongoDB alongside the OS (my Linux Mint setup doesn't consume many
 resources). Both worke services in \texttt{docker-compose.yml} are identical
-except for name:
+except for name (\cref{fig:2-5-compose-spark-workers}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_5_compose_spark_workers.png}
 	\caption{Spark worker services in \texttt{docker-compose.yml}, both workers
 		identical except for name}
+	\label{fig:2-5-compose-spark-workers}
 \end{figure}
 
 \par
-I started all three Spark services and verified all six containers were running:
+I started all three Spark services and verified all six containers were running (\cref{fig:2-5-spark-up}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_5_spark_up.png}
 	\caption{All containers running including spark-master, spark-worker-1 and
 		spark-worker-2}
+	\label{fig:2-5-spark-up}
 \end{figure}
 
 \par
 To confirm the cluster deployed correctly I opened the Spark Standalone WebUI at
 \texttt{http://localhost:8080}. It shows the master, both workers registered with their
-allocated cores and memory, and the cluster status:
+allocated cores and memory, and the cluster status (\cref{fig:2-5-spark-webui}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_5_spark_webui.png}
 	\caption{Spark Standalone WebUI at \texttt{http://localhost:8080} showing
 		master and 2 workers}
+	\label{fig:2-5-spark-webui}
 \end{figure}

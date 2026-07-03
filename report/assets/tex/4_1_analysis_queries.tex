@@ -1,7 +1,8 @@
 \subsection{Queries}
+\label{sec:4_1_analysis_queries}
 
 \par
-Before running any queries, the four datasets (ingested in Phase 2) had to be
+Before running any queries, the four datasets (ingested in \hyperref[sec:phase2]{Phase 2}) had to be
 re-loaded and registered as permanent Spark SQL tables. This meant using either
 \texttt{saveAsTable} or saving using parquet within \texttt{spark.sql}. I chose
 the former.
@@ -11,28 +12,28 @@ My first attempt at \texttt{saveAsTable} ran without errors, but the tables
 came back empty. Running \texttt{DESCRIBE FORMATTED} showed why: since I
 hadn't set an explicit path, Spark defaulted to
 \texttt{spark.sql.warehouse.dir}, which pointed at a local filesystem path
-(\texttt{file:/opt/spark/spark-warehouse/...}). On a multi-container cluster,
+(\texttt{file:/.../spark-warehouse/}). On a multi-container cluster,
 ``local'' means local to whatever worker ran the write, so the files ended up
 on that worker's own disk, invisible to everyone else. I fixed it by passing
 an explicit HDFS path via the \texttt{path} option on each write, so the table
-data lives somewhere every container can actually reach:
+data lives somewhere every container can actually reach (\cref{fig:4-1-hdfs-write-tables}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_1_hdfs_write_tables.png}
-	\caption{Registering the four permanent tables with explicit HDFS paths under
-		\texttt{/practice/tables/}}
+	\caption{Registering the four permanent tables under \texttt{/practice/tables/}}
+	\label{fig:4-1-hdfs-write-tables}
 \end{figure}
 
 \par
 I confirmed the tables being registered under the \texttt{practice} database
-and being permanent with \texttt{isTemporary = false} with \texttt{SHOW TABLES}:
+and being permanent with \texttt{isTemporary = false} with \texttt{SHOW TABLES} (\cref{fig:4-1-show-tables-practice}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_1_show_tables_practice.png}
-	\caption{\texttt{SHOW TABLES IN practice} \textemdash\ countries, airlines,
-		airports, and routes all registered as permanent tables}
+	\caption{\texttt{SHOW TABLES IN practice} output}
+	\label{fig:4-1-show-tables-practice}
 \end{figure}
 
 \par
@@ -44,25 +45,27 @@ approaches returned identical results.
 
 \par
 Filtering \texttt{routes} on \texttt{source\_country = 'Brazil'} and counting
-gives 1304 flights, matching between the DataFrame API and SQL:
+gives 1304 flights, matching between the DataFrame API and SQL (\cref{fig:4-1-Q1}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_1_Q1.png}
-	\caption{Q1 result: 1304 flights depart from Brazil (DataFrame API and SQL)}
+	\caption{DataFrame API and SQL results for Q1}
+	\label{fig:4-1-Q1}
 \end{figure}
 
 \subsubsection*{Q2: Which airports are located in the NW quadrant?}
 
 \par
-This filters the \texttt{hemisphere\_quadrant} column (derived in Phase 2 via
+This filters the \texttt{hemisphere\_quadrant} column (derived in \cref{sec:3_3_ingestion_airports} via
 UDF) for the value \texttt{NW}. Results are airports with positive latitude and
-negative longitude, such as those across Greenland, Iceland, and Canada:
+negative longitude, such as those across Greenland, Iceland, and Canada (\cref{fig:4-1-Q2}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_1_Q2.png}
-	\caption{Q2 result: airports in the NW quadrant (DataFrame API and SQL)}
+	\caption{DataFrame API and SQL results for Q2}
+	\label{fig:4-1-Q2}
 \end{figure}
 
 \subsubsection*{Q3: Which countries have the most airports above 2000 feet
@@ -71,13 +74,13 @@ negative longitude, such as those across Greenland, Iceland, and Canada:
 \par
 Filtering \texttt{airports} on \texttt{altitude > 2000}, grouping by country,
 and ordering by count descending. The United States leads with 234 airports
-above 2000 feet, followed by China (76), South Africa (66), and Brazil (63):
+above 2000 feet, followed by China (76), South Africa (66), and Brazil (63) (\cref{fig:4-1-Q3}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_1_Q3.png}
-	\caption{Q3 result: countries ranked by number of airports above 2000 feet
-		altitude}
+	\caption{DataFrame API and SQL results for Q3}
+	\label{fig:4-1-Q3}
 \end{figure}
 
 \subsubsection*{Q4: What are the top 10 routes with the most stops?}
@@ -87,24 +90,26 @@ Ordering \texttt{routes} by \texttt{stops} descending and taking the top 10.
 Note that the OpenFlights \texttt{stops} field in this dataset is effectively
 binary in practice \textemdash\ the maximum value present is 1, so the
 ``top 10'' result is a set of 10 one-stop routes rather than a strict ranking
-by increasingly large stop counts:
+by increasingly large stop counts (\cref{fig:4-1-Q4}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_1_Q4.png}
-	\caption{Q4 result: top 10 routes by number of stops (all tied at 1 stop)}
+	\caption{DataFrame API and SQL results for Q4}
+	\label{fig:4-1-Q4}
 \end{figure}
 
 \subsubsection*{Q5: What is the average number of routes per airline?}
 
 \par
 Grouping \texttt{routes} by \texttt{airline\_id}, counting routes per airline,
-then averaging across airlines gives 127.42 routes per airline on average:
+then averaging across airlines gives 127.42 routes per airline on average (\cref{fig:4-1-Q5}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_1_Q5.png}
-	\caption{Q5 result: average of 127.42 routes per airline}
+	\caption{DataFrame API and SQL results for Q5}
+	\label{fig:4-1-Q5}
 \end{figure}
 
 \subsubsection*{Q6: What is the ISO code of the countries that have routes with an empty codeshare?}
@@ -124,11 +129,11 @@ against two India rows created two duplicate outputs that never got cleaned
 up. The SQL version ran \texttt{DISTINCT} after the join instead, on the full
 \texttt{(source\_country, iso\_code)} pair, which caught the duplicate. Adding
 a second \texttt{.distinct()} after the join fixed it, both now return 207
-rows:
+rows (\cref{fig:4-1-Q6}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_1_Q6.png}
-	\caption{Q6 result: 207 countries with routes containing an empty codeshare
-		(DataFrame API and SQL, matching after fixing a duplicate-row discrepancy)}
+	\caption{DataFrame API and SQL results for Q6, after fixing the duplicate-row discrepancy}
+	\label{fig:4-1-Q6}
 \end{figure}

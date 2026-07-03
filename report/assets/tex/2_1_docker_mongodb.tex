@@ -1,24 +1,28 @@
 \subsection{MongoDB Preparation}
+\label{sec:2_1_docker_mongodb}
 
 \par
 I first searched for a MongoDB Docker image compatible with Spark 3.5.x.
-I settled for the official image on Docker Hub which I used as the base:
+I settled for the official image on Docker Hub which I used as the base
+(\cref{fig:2-1-dockerhub-mongo}):
 \href{https://hub.docker.com/_/mongo}{https://hub.docker.com/\_/mongo}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_1_dockerhub_mongo.png}
 	\caption{Official MongoDB image on Docker Hub}
+	\label{fig:2-1-dockerhub-mongo}
 \end{figure}
 
 \par
 I went with version 6.0 since it's supported by the Mongo Spark Connector 10.x,
 which is what Spark 3.5.x requires. I created a \texttt{docker-compose.yml}
 file (which will be used for subsequent services) and added it as the first
-service:
+service (\cref{fig:2-1-compose-mongodb}):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{2_1_compose_mongodb.png}
 	\caption{\texttt{docker-compose.yml} with the MongoDB service}
+	\label{fig:2-1-compose-mongodb}
 \end{figure}
