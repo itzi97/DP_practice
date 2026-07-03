@@ -1,27 +1,46 @@
 \subsection{Persist Aggregated Data}
 
 \par
-The final task was to persist an aggregation answering: how many airports does each country have where at least 2 routes are to airports with timezone \texttt{'O'}?
+The final task was to persist an aggregation answering: how many airports does
+each country have where at least 2 routes are to airports with timezone
+\texttt{'O'}?
 
 \par
-The OpenFlights \texttt{airports.dat} format contains two distinct fields related to time: a numeric UTC offset, and a single-letter DST region code with possible values \texttt{E}, \texttt{A}, \texttt{S}, \texttt{O}, \texttt{Z}, \texttt{N}, \texttt{U} (Europe, US/Canada, South America, Australia, New Zealand, None, Unknown). In my Phase 2 ingestion, these were named \texttt{timezone} (numeric offset) and \texttt{dst} (letter code) respectively. Since \texttt{'O'} is not a valid numeric UTC offset, it can only refer to the letter-coded \texttt{dst} field. My first attempt filtered on the \texttt{timezone} column and silently returned zero rows for every downstream step; switching the filter to the \texttt{dst} column resolved this.
+OpenFlights' \texttt{airports.dat} actually has two different time-related
+fields: a numeric UTC offset, and a single-letter DST region code
+(\texttt{E}, \texttt{A}, \texttt{S}, \texttt{O}, \texttt{Z}, \texttt{N},
+\texttt{U}, covering Europe, US/Canada, South America, Australia, New
+Zealand, None, and Unknown). In my Phase 2 ingestion I called these
+\texttt{timezone} (the numeric one) and \texttt{dst} (the letter one). Since
+\texttt{'O'} isn't a valid UTC offset, it has to be the \texttt{dst} field. My
+first attempt filtered on \texttt{timezone} instead, which silently returned
+zero rows all the way down the pipeline. Switching to \texttt{dst} fixed it.
 
 \par
-The logic: for each route, I joined the destination airport to obtain its \texttt{dst} code and filtered for \texttt{dst = 'O'}. I then grouped by source airport to count how many such routes originate from each airport, and kept only airports with 2 or more qualifying routes. Finally, I grouped the qualifying airports by country and counted them:
+Here's the logic: for each route, I joined the destination airport to get its
+\texttt{dst} code and filtered for \texttt{dst = 'O'}. Then I grouped by
+source airport to count how many of these routes come from each one, keeping
+only airports with 2 or more. Finally, I grouped those airports by country and
+counted them:
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_2_aggregation_result.png}
-	\caption{Aggregation result: number of qualifying airports per country, ordered descending. Australia leads with 58, consistent with \texttt{'O'} representing the Australian DST region}
+	\caption{Aggregation result: number of qualifying airports per country,
+		ordered descending. Australia leads with 58, consistent with \texttt{'O'}
+		representing the Australian DST region}
 \end{figure}
 
 \par
-The result was written to HDFS in Parquet format at \texttt{/practice/aggregations/} and registered as a permanent table (\texttt{isTemporary = false}) using \texttt{CREATE TABLE ... USING PARQUET LOCATION}, then read back to confirm the write:
+I wrote the result to HDFS in Parquet format at
+\texttt{/practice/aggregations/}, registered it as a permanent table
+(\texttt{isTemporary = false}) with
+\texttt{CREATE TABLE ... USING PARQUET LOCATION}, then read it back to
+confirm the write:
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{4_2_aggregation_persist.png}
-	\caption{Writing the aggregation to Parquet at /practice/aggregations/, registering it as a permanent table, and reading it back to verify}
+	\caption{Writing the aggregation to Parquet at /practice/aggregations/,
+		registering it as a permanent table, and reading it back to verify}
 \end{figure}
-
-\inputminted[firstlinenumber=183,firstline=183]{scala}{../../code/3_analysis.scala}

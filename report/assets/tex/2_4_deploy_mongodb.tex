@@ -1,41 +1,43 @@
 \subsection{Deploy MongoDB}
 
 \par
-With the MongoDB service already defined in \texttt{docker-compose.yml} from the preparation
-step, I started the container and checked it was up:
+With the MongoDB service already defined in \texttt{docker-compose.yml} from
+the preparation step, I started the container and checked it was up:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_4_mongodb_up.png}
-    \caption{MongoDB container running}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_4_mongodb_up.png}
+	\caption{MongoDB container running}
 \end{figure}
 
 \par
-Then I opened the MongoDB shell to set up the \texttt{practice} database needed for the project:
+Then I opened the MongoDB shell to set up the \texttt{practice} database needed
+for the project:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_4_mongosh_enter.png}
-    \caption{Accessing the MongoDB shell via \texttt{docker exec -it mongodb mongosh}}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_4_mongosh_enter.png}
+	\caption{Accessing the MongoDB shell via \texttt{docker exec -it mongodb mongosh}}
 \end{figure}
 
 \par
-To create the database I inserted a temporary document into a dummy collection and then deleted it ---
-MongoDB only persists a database once it has data. On the first try I made a syntax error
-(\texttt{\{( )\}} instead of \texttt{\{\}}), caught it immediately and ran the correct command.
-The \texttt{show dbs} output confirms \texttt{practice} was created successfully:
+To create the database I inserted a temporary document into a dummy collection
+and then deleted it; MongoDB only persists a database once it has data. On the
+first try I made a syntax error (\texttt{\{( )\}} instead of \texttt{\{\}}),
+caught it immediately and ran the correct command. The \texttt{show dbs}
+output confirms \texttt{practice} was created successfully:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_4_mongosh_practice_db.png}
-    \caption{Creating the \texttt{practice} database and verifying with \texttt{show dbs}}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_4_mongosh_practice_db.png}
+	\caption{Creating the \texttt{practice} database and verifying with \texttt{show dbs}}
 \end{figure}
 
 \par
 Finally, I exited the MongoDB shell:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_4_mongosh_exit.png}
-    \caption{Exiting the MongoDB shell}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_4_mongosh_exit.png}
+	\caption{Exiting the MongoDB shell}
 \end{figure}

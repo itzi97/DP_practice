@@ -1,44 +1,45 @@
 \subsection{Deploy HDFS}
 
 \par
-For HDFS I reused the container setup from the class activities --- it comes with a
-\texttt{Dockerfile} based on \texttt{apache/hadoop:3.3.6} and a startup script
-\texttt{start-hdfs.sh} that handles the configuration and starts the NameNode, DataNode,
-and SecondaryNameNode in pseudo-distributed mode. I copied both files into
-\texttt{docker/hdfs/}:
+For HDFS I reused the container setup from Data Processing class, as it comes
+with a \texttt{Dockerfile} based on \texttt{apache/hadoop:3.3.6} and a startup
+script \texttt{start-hdfs.sh} that handles the configuration and starts the
+NameNode, DataNode, and SecondaryNameNode in pseudo distributed mode. I copied
+both files into \texttt{docker/hdfs/}:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_2_hdfs_dockerfile.png}
-    \caption{HDFS build context: \texttt{Dockerfile} and \texttt{start-hdfs.sh}}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_2_hdfs_dockerfile.png}
+	\caption{HDFS build context: \texttt{Dockerfile} and \texttt{start-hdfs.sh}}
 \end{figure}
 
 \par
 I then added the HDFS service to \texttt{docker-compose.yml}, pointing
-\texttt{build} to the local \texttt{./hdfs} context so Docker builds the image from those files:
+\texttt{build} to the local \texttt{./hdfs} context so Docker builds the image
+from those files:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_2_compose_hdfs.png}
-    \caption{docker-compose.yml with HDFS service added}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_2_compose_hdfs.png}
+	\caption{\texttt{docker-compose.yml} with HDFS service added}
 \end{figure}
 
 \par
 Started it up and verified both MongoDB and HDFS were running:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_2_hdfs_up.png}
-    \caption{HDFS and MongoDB containers running}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_2_hdfs_up.png}
+	\caption{HDFS and MongoDB containers running}
 \end{figure}
 
 \par
 To make sure HDFS came up correctly I opened the NameNode WebUI at
 \texttt{http://localhost:9870}. It shows the NameNode status, active DataNodes,
-and filesystem capacity --- everything looked good:
+and filesystem capacity, everything looked good:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_2_hdfs_webui.png}
-    \caption{HDFS NameNode WebUI at \texttt{http://localhost:9870}}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_2_hdfs_webui.png}
+	\caption{HDFS NameNode WebUI at \texttt{http://localhost:9870}}
 \end{figure}

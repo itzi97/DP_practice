@@ -1,43 +1,49 @@
 \subsection{Deploy Spark Standalone Cluster}
 
 \par
-To set up the Spark Standalone cluster I added three services to \texttt{docker-compose.yml}:
-one master and two workers. The master is responsible for resource management and exposes
-the Standalone WebUI on port 8080 and the master port on 7077:
+To set up the Spark Standalone cluster I added three services to
+\texttt{docker-compose.yml}: one master and two workers. The master is
+responsible for resource management and exposes the Standalone WebUI on port
+8080 and the master port on 7077:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_5_compose_spark_master.png}
-    \caption{Spark master service in docker-compose.yml}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_5_compose_spark_master.png}
+	\caption{Spark master service in docker-compose.yml}
 \end{figure}
 
 \par
-Both workers share the same configuration, differing only in their container name and hostname.
-The resource allocation (4 cores and 8GB RAM each) was chosen based on the available hardware:
+Both workers share the same configuration, differing only in their container
+name and hostname. I chose the following resource allocation (4 cores and 8GB
+RAM each) based on the available hardware:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_5_computer_specs.png}
-    \caption{Machine specs used to determine worker resource allocation}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_5_computer_specs.png}
+	\caption{Machine specs used to determine worker resource allocation}
 \end{figure}
 
 \par
-The machine has 16 cores and 32GB RAM. Allocating 4 cores and 8GB per worker leaves enough
-headroom for the OS and the other containers (HDFS, Postgres, MongoDB):
+With 16 cores and 32GB total, 4/8GB per worker still leaves room for HDFS,
+Postgres and MongoDB alongside the OS (my Linux Mint setup doesn't consume many
+resources). Both worke services in \texttt{docker-compose.yml} are identical
+except for name:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_5_compose_spark_workers.png}
-    \caption{Spark worker services in docker-compose.yml --- both workers identical except for name}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_5_compose_spark_workers.png}
+	\caption{Spark worker services in \texttt{docker-compose.yml}, both workers
+		identical except for name}
 \end{figure}
 
 \par
 I started all three Spark services and verified all six containers were running:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_5_spark_up.png}
-    \caption{All containers running including spark-master, spark-worker-1 and spark-worker-2}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_5_spark_up.png}
+	\caption{All containers running including spark-master, spark-worker-1 and
+		spark-worker-2}
 \end{figure}
 
 \par
@@ -46,7 +52,8 @@ To confirm the cluster deployed correctly I opened the Spark Standalone WebUI at
 allocated cores and memory, and the cluster status:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_5_spark_webui.png}
-    \caption{Spark Standalone WebUI at \texttt{http://localhost:8080} showing master and 2 workers}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_5_spark_webui.png}
+	\caption{Spark Standalone WebUI at \texttt{http://localhost:8080} showing
+		master and 2 workers}
 \end{figure}

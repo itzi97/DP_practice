@@ -6,9 +6,10 @@ To allow the Spark containers to access the Postgres JDBC driver, I mounted the
 jar available at \texttt{/opt/spark/jars/extra/} inside the containers:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_6_postgres_jar.png}
-    \caption{Volume mount added to Spark services in \texttt{docker-compose.yml} exposing the Postgres JDBC jar}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_6_postgres_jar.png}
+	\caption{Volume mount added to Spark services in \texttt{docker-compose.yml}
+		exposing the Postgres JDBC jar}
 \end{figure}
 
 \par
@@ -16,67 +17,62 @@ After updating the compose file, I restarted the Spark services to apply the new
 volume configuration:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_6_containers_restarted.png}
-    \caption{Spark master and worker containers restarted with the new volume mount}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_6_containers_restarted.png}
+	\caption{Spark master and worker containers restarted with the new volume mount}
 \end{figure}
 
 \par
 I then opened a shell inside the \texttt{spark-master} container and launched
 \texttt{spark-shell} pointing to the Standalone master, with 2 executors matching
 the 2 workers, the Postgres JDBC jar, and the MongoDB Spark connector package.
-The Ivy cache was redirected to \texttt{/tmp/.ivy2} to avoid permission issues with
-the default home directory:
-
-\begin{lstlisting}[language=bash]
-bin/spark-shell \
-  --master spark://spark-master:7077 \
-  --num-executors 2 \
-  --jars /opt/spark/jars/extra/postgresql-42.7.3.jar \
-  --packages org.mongodb.spark:mongo-spark-connector_2.12:10.3.0 \
-  --conf spark.driver.extraJavaOptions="-Divy.home=/tmp/.ivy2 -Divy.cache.dir=/tmp/.ivy2/cache"
-\end{lstlisting}
+I redirected the Ivy cache to \texttt{/tmp/.ivy2} to avoid permission issues with the default
+home directory (I had issues with this initially):
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_6_spark_shell_started.png}
-    \caption{Spark shell successfully started with the \texttt{scala>} prompt}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_6_spark_shell_started.png}
+	\caption{Spark shell successfully started with the \texttt{scala>} prompt}
 \end{figure}
 
 \par
-To verify the running application, I attempted to access the Spark Application WebUI
-at \texttt{http://localhost:4040}. The port was not initially exposed, so I added it
-to the \texttt{spark-master} service in \texttt{docker-compose.yml}:
+To verify the running application, I attempted to access the Spark Application
+WebUI at \texttt{http://localhost:4040}. I wasn't able to at first due to the
+port not being initially exposed, so I added it to the \texttt{spark-master}
+service in \texttt{docker-compose.yml}:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_6_expose_4040.png}
-    \caption{Port 4040 added to \texttt{spark-master} in \texttt{docker-compose.yml}}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_6_expose_4040.png}
+	\caption{Port 4040 added to \texttt{spark-master} in \texttt{docker-compose.yml}}
 \end{figure}
 
 \par
-A \texttt{docker compose restart} on the master alone was not sufficient to bind
-the new port --- a full \texttt{docker compose down} and \texttt{up} was required:
+I wasn't able to bind the new port with just a
+\texttt{docker compose restart} on the master, so I did a full
+\texttt{docker compose down} and \texttt{up}:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_6_restart_master.png}
-    \caption{Restarting only the master --- port 4040 still not bound}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_6_restart_master.png}
+	\caption{Restarting only the master, port 4040 still not bound}
 \end{figure}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_6_full_restart.png}
-    \caption{Full \texttt{docker compose down} and \texttt{up} successfully binds port 4040}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_6_full_restart.png}
+	\caption{Full \texttt{docker compose down} and \texttt{up} successfully binds
+		port 4040}
 \end{figure}
 
 \par
 With the shell running and port 4040 exposed, the Spark Application WebUI became
-accessible at \texttt{http://localhost:4040}, confirming the application was running
-correctly:
+accessible at \texttt{http://localhost:4040}, confirming the application was
+running correctly:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_6_spark_app_webui.png}
-    \caption{Spark Application WebUI at \texttt{http://localhost:4040} showing the running shell application}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_6_spark_app_webui.png}
+	\caption{Spark Application WebUI at \texttt{http://localhost:4040} showing
+		the running shell application}
 \end{figure}

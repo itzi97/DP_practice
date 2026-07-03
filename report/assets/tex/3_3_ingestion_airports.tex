@@ -1,16 +1,22 @@
 \subsection{Airports}
 
 \par
-I started by reading \texttt{airports.dat} from the data directory mounted inside the Spark container at \texttt{/data/}. Since the file is in CSV format and has no header row, I loaded it with the CSV connector, inferred the schema, and assigned the expected column names:
+I started by reading \texttt{airports.dat} from the data directory mounted
+inside the Spark container at \texttt{/data/}. Since the file is in CSV format
+and has no header row, I loaded it with the CSV connector, inferred the schema,
+and assigned the expected column names (same as with Airlines):
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_3_csv_read.png}
-	\caption{Loading \texttt{airports.dat} as a DataFrame and displaying the first rows}
+	\caption{Loading \texttt{airports.dat} as a DataFrame and displaying the
+		first rows}
 \end{figure}
 
 \par
-Then I defined and registered a UDF that determines the geographic quadrant of each airport based on its latitude and longitude. Using this UDF, I added the \texttt{hemisphere\_quadrant} column to the DataFrame:
+Then I defined and registered a UDF that determines the geographic quadrant of
+each airport based on its latitude and longitude. Using this UDF, I added the
+\texttt{hemisphere\_quadrant} column to the DataFrame:
 
 \begin{figure}[H]
 	\centering
@@ -19,22 +25,44 @@ Then I defined and registered a UDF that determines the geographic quadrant of e
 \end{figure}
 
 \par
-After that, I stored the resulting DataFrame in the \texttt{airports} table of the Postgres database using Spark's JDBC connector. Once the write completed, I read the table back from Postgres using the \texttt{partitionColumn}, \texttt{lowerBound}, \texttt{upperBound}, and \texttt{numPartitions} options, and displayed the first five rows to verify that the ingestion was successful:
+After that, I stored the resulting DataFrame in the \texttt{airports} table of
+the Postgres database using Spark's JDBC connector. Once the write completed, I
+read the table back from Postgres using the \texttt{partitionColumn},
+\texttt{lowerBound}, \texttt{upperBound}, and \texttt{numPartitions} options,
+and displayed the first five rows to verify that the ingestion was successful:
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{3_3_postgres_write.png}
-	\caption{Writing the airports DataFrame to Postgres and verifying the stored data, using \texttt{partitionColumn}, \texttt{lowerBound}, \texttt{upperBound} and \texttt{numPartitions} on the read}
+	\caption{Writing the airports DataFrame to Postgres and verifying the stored
+		data, using \texttt{partitionColumn}, \texttt{lowerBound},
+		\texttt{upperBound} and \texttt{numPartitions} on the read}
 \end{figure}
 
 \par
-By default, \texttt{spark.read.jdbc} opens a single connection and pulls the entire table through one task, regardless of how many executors are available. The four properties above tell Spark to split the read into several parallel range queries instead, each handled by a separate JDBC connection and task:
+By default, \texttt{spark.read.jdbc} opens one connection and uses a single
+task to pull the entire table, even if I have more than one executor
+available. Adding the following options, I can tell Spark to split the read
+into several parallel range queries instead, each with its own connection:
 
 \begin{itemize}
-	\item \texttt{partitionColumn = "airport\_id"}: this is the table's numeric primary key, so it can be used to split rows into contiguous, non-overlapping ranges without scanning the data first. It is also close to evenly distributed, which keeps the resulting partitions similarly sized.
-	\item \texttt{lowerBound = 1} and \texttt{upperBound = 14000}: these bracket the actual range of \texttt{airport\_id} in the dataset (the ingested data runs from 1 to 14110). Spark uses these two values only to compute the width of each partition's range \textemdash\ they do not filter out rows, since anything below \texttt{lowerBound} is included in the first partition and anything above \texttt{upperBound} is included in the last one.
-	\item \texttt{numPartitions = 4}: this sets how many parallel range queries are issued, matching the number of cores available per worker in the Spark Standalone cluster (Section 2.5) so that each partition's read can run on its own task without contending for the same core.
+	\item \texttt{partitionColumn = "airport\_id"}: this is a numeric primary
+	      key, which is good for Spark since it can split it into clean,
+	      non-overlapping ranges without scanning the table first. These ids
+	      are fairly spread out, so the partitions end up similar in size.
+	\item \texttt{lowerBound = 1}, \texttt{upperBound = 14000}:
+	      \texttt{airport\_id} actually runs from 1 to 14110, but these are
+	      only used as an indicator for how wide the partitions should be for
+	      Spark, they don't drop any rows outside that range, ids below 1 or
+	      above 14000 still end up in the first or last partition.
+	\item \texttt{numPartitions = 4}: mirrors the number of cores per worker
+	      in the cluster (Section 2.5) so the parallel reads don't compete for
+	      the same resources.
 \end{itemize}
 
 \par
-The practical benefit is read throughput: instead of one task serially pulling roughly 7{,}700 rows through a single connection, four tasks each pull their own \texttt{airport\_id} range concurrently, cutting wall-clock read time and avoiding a single-task bottleneck when this table is later joined against \texttt{routes} in Section 3.4.
+Instead of pulling all 7{,}700 rows through a single connection, this runs
+four reads in parallel, each grabbing its own slice of \texttt{airport\_id}s.
+That reduces the chance of the connection becoming a bottleneck, especially
+useful since this table gets joined against \texttt{routes} later in
+Section 3.4.

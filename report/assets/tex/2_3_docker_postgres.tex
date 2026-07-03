@@ -1,30 +1,34 @@
 \subsection{Deploy Postgres}
 
 \par
-Next I added Postgres to the compose file. I used the official \texttt{postgres:9.6} image
-and set the credentials and database name to what the Spark JDBC connector will expect later:
+Next I added Postgres to the compose file. I used the
+\href{https://hub.docker.com/_/postgres}{official image}
+(\texttt{postgres:9.6}) and set the credentials and database name to what the
+Spark JDBC connector will expect later:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_3_compose_postgres.png}
-    \caption{docker-compose.yml with Postgres service added}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_3_compose_postgres.png}
+	\caption{\texttt{docker-compose.yml} with Postgres service added}
 \end{figure}
 
 \par
 Brought it up and checked all three containers were running:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_3_postgres_up.png}
-    \caption{MongoDB, HDFS and Postgres containers running}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_3_postgres_up.png}
+	\caption{MongoDB, HDFS and Postgres containers running}
 \end{figure}
 
 \par
-I connected to the Postgres shell with \texttt{psql} and ran \texttt{\textbackslash l}
-to list the databases --- \texttt{sparkdb} shows up as expected:
+I connected to the Postgres shell with \texttt{psql} and ran
+\texttt{\textbackslash l} to list the databases, \texttt{sparkdb} shows up as
+expected:
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{2_3_postgres_shell.png}
-    \caption{Postgres shell --- \texttt{sparkdb} confirmed with \texttt{\textbackslash l}}
+	\centering
+	\includegraphics[width=0.9\textwidth]{2_3_postgres_shell.png}
+	\caption{Postgres shell, \texttt{sparkdb} confirmed with
+		\texttt{\textbackslash l}}
 \end{figure}
