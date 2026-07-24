@@ -1,6 +1,6 @@
 # DP_practice
 
-Data Processing mandatory practice — Academic year 2024-2025.
+Data Processing mandatory practice — Academic year 2025-2026.
 
 ## Stack
 - Apache Spark 3.5.x Standalone
